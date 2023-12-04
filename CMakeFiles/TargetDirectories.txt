@@ -1,0 +1,3 @@
+C:/Users/Derek/MarkovJuniorRaylib/CMakeFiles/markov.dir
+C:/Users/Derek/MarkovJuniorRaylib/CMakeFiles/edit_cache.dir
+C:/Users/Derek/MarkovJuniorRaylib/CMakeFiles/rebuild_cache.dir
