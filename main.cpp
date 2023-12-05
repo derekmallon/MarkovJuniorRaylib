@@ -7,6 +7,7 @@
 #include <raylib.h>
 #include <math.h>
 #include <stdlib.h>
+#include <cstring>
 
 std::tuple<std::string,bool> ApplyRule(std::string w,std::string rule){
   auto x = rule.substr(0,rule.find("="));
@@ -25,6 +26,13 @@ std::tuple<std::string,bool> ApplyRule(std::string w,std::string rule){
 
 typedef std::vector<char> State;
 
+std::vector<int> VectorFromNtoP(int n,int p){
+  std::vector<int> output(p-n,0);
+  for(int i=0;i<(p-n);i++){
+    output[i] = n+i;
+  }
+  return output;
+}
 
 std::vector<std::vector<int>> FindAllMatchesFromPoint(std::vector<std::vector<int>> matches,const State &state, int point,const std::string& xMapping){
   
@@ -37,6 +45,10 @@ std::vector<std::vector<int>> FindAllMatchesFromPoint(std::vector<std::vector<in
   int y = point / width;
   //check left
   if(x + xMapping.size() < width){
+    if(std::memcmp(xMapping.data(),&state[point],xMapping.size()) == 0){
+      matches.push_back(VectorFromNtoP(point,point+xMapping.size()));
+    }
+    /*
     std::vector<int> potentialMatch = {};
     for(int i=0;i<xMapping.size();i++){
       int newPoint = y*width + (i+x);
@@ -50,6 +62,7 @@ std::vector<std::vector<int>> FindAllMatchesFromPoint(std::vector<std::vector<in
         break;
       }
     }
+    */
   }
   //check right
   if(x > xMapping.size()){
@@ -104,6 +117,16 @@ std::vector<std::vector<int>> FindAllMatchesFromPoint(std::vector<std::vector<in
   return matches;
 }
 
+struct Rule{
+  Rectangle size;
+  std::vector<int> rowWise;
+  std::vector<int> columnWise;
+
+
+  Rule(const std::string& ruleText){
+  }
+}
+
 std::vector<std::vector<int>> FindMatchesForIndexs(std::vector<std::vector<int>> matches,const State &state,const std::vector<int>& indexes,std::string rule){
   auto x = (std::string)rule.substr(0,rule.find("="));
   auto y = (std::string)rule.substr(rule.find("=")+1,rule.size());
@@ -123,6 +146,9 @@ std::vector<std::vector<int>> FindAllMatches(const State &state,std::string rule
   std::vector<std::vector<int>> matches;
   for(int i=0;i<state.size();i++){
     matches = FindAllMatchesFromPoint(std::move(matches), state, i, x);
+    if(matches.size() > 2){
+      return matches;
+    }
   }
 
   return matches;
@@ -131,7 +157,11 @@ std::vector<std::vector<int>> FindAllMatches(const State &state,std::string rule
 State ApplyMatch(State state,std::vector<int> match,std::string rule){
   auto y = rule.substr(rule.find("=")+1,rule.size());
   for(int indexInMatch = 0;indexInMatch < match.size();indexInMatch++){
-    state[match[indexInMatch]] = y[indexInMatch];
+    if(y[indexInMatch] == '*'){
+      
+    }else{
+      state[match[indexInMatch]] = y[indexInMatch];
+    }
   }
   return state;
 }
@@ -189,11 +219,8 @@ int main(void){
 
   SetTargetFPS(60);               // Set our game to run at 60 frames-per-second
   const std::vector<std::string> rules = {
-    "RBB=WWR",
-    "RBW=GWP",
-    "PWG=PBU",
-    "UWW=BBU",
-    "UWP=BBR"
+    "RBB=**R",
+    "RBRBRB=WWWWWWW"
   };
 
   int current_rule = 0;
